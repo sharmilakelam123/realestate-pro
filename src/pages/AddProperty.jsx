@@ -12,14 +12,64 @@ function AddProperty() {
     image: "",
   });
 
+  const [loading, setLoading] = useState(false);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Property Data:", form);
-    alert("Property Added Successfully (Frontend Only)");
+
+    try {
+      setLoading(true);
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        "http://localhost:5000/api/properties",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            title: form.title,
+            description: form.description,
+            price: form.price,
+            location: form.location,
+            image: form.image,
+            category: form.category,
+            type: form.type,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Property Added Successfully 🚀");
+
+        // clear form
+        setForm({
+          title: "",
+          type: "Villa",
+          category: "Buy",
+          price: "",
+          location: "",
+          description: "",
+          image: "",
+        });
+      } else {
+        alert(data.message || "Something went wrong");
+      }
+    } catch (error) {
+      console.log(error);
+      alert("Server Error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,6 +91,7 @@ function AddProperty() {
             name="title"
             placeholder="Property Title"
             className="border p-2 w-full"
+            value={form.title}
             onChange={handleChange}
             required
           />
@@ -49,6 +100,7 @@ function AddProperty() {
           <select
             name="type"
             className="border p-2 w-full"
+            value={form.type}
             onChange={handleChange}
           >
             <option>Villa</option>
@@ -62,6 +114,7 @@ function AddProperty() {
           <select
             name="category"
             className="border p-2 w-full"
+            value={form.category}
             onChange={handleChange}
           >
             <option>Buy</option>
@@ -72,8 +125,9 @@ function AddProperty() {
           <input
             type="text"
             name="price"
-            placeholder="Price (e.g. 50 Lakhs)"
+            placeholder="Price"
             className="border p-2 w-full"
+            value={form.price}
             onChange={handleChange}
             required
           />
@@ -84,6 +138,7 @@ function AddProperty() {
             name="location"
             placeholder="Location"
             className="border p-2 w-full"
+            value={form.location}
             onChange={handleChange}
             required
           />
@@ -94,6 +149,7 @@ function AddProperty() {
             name="image"
             placeholder="Image URL"
             className="border p-2 w-full"
+            value={form.image}
             onChange={handleChange}
           />
 
@@ -103,6 +159,7 @@ function AddProperty() {
             placeholder="Description"
             className="border p-2 w-full"
             rows="4"
+            value={form.description}
             onChange={handleChange}
           ></textarea>
 
@@ -110,8 +167,9 @@ function AddProperty() {
           <button
             type="submit"
             className="bg-red-500 text-white w-full p-2 rounded"
+            disabled={loading}
           >
-            Add Property
+            {loading ? "Adding..." : "Add Property"}
           </button>
         </form>
       </div>
