@@ -4,6 +4,7 @@ import { setProperties } from '../redux/store';
 import SearchBar from '../components/home/SearchBar';
 import PropertyCard from '../components/property/PropertyCard';
 import { apiGet } from '../utils/api';
+import { motion } from 'framer-motion';
 
 const CATEGORY_LABELS = {
   apartment: 'Apartment',
@@ -33,7 +34,7 @@ export default function Home() {
         dispatch(setProperties(Array.isArray(items) ? items : []));
       } catch (e) {
         if (cancelled) return;
-        setError((e?.message || 'Failed to load properties') + ' (is backend running on :5000?)');
+        setError(e?.message || 'Failed to load properties');
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -63,7 +64,11 @@ export default function Home() {
   return (
     <div>
       {/* Search Header Banner */}
-      <section style={{
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        style={{
         backgroundImage: 'linear-gradient(135deg, #002855 0%, #001226 100%)',
         color: '#ffffff',
         padding: '60px 20px 80px',
@@ -76,7 +81,7 @@ export default function Home() {
           Explore India's premium RERA-verified real estate listings, plots, and offices.
         </p>
         <SearchBar />
-      </section>
+      </motion.section>
       {/* Property Results Grid Feed */}
       <section style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
@@ -98,7 +103,11 @@ export default function Home() {
             {error}
           </div>
         )}
-        <div style={{
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
+          style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
           gap: '24px'
@@ -106,7 +115,7 @@ export default function Home() {
           {filteredList.map(item => (
             <PropertyCard key={item._id || item.id} property={item} />
           ))}
-        </div>
+        </motion.div>
       </section>
     </div>
   );

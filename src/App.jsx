@@ -13,6 +13,9 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
 import SearchResults from './pages/SearchResults';
+import RecentlySearched from './pages/RecentlySearched';
+import RecentlyViewed from './pages/RecentlyViewed';
+import Contacted from './pages/Contacted';
 // Layout Components
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
@@ -31,6 +34,9 @@ export default function App() {
               <Route path="/add-property" element={<AddProperty />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/recently-searched" element={<RecentlySearched />} />
+              <Route path="/recently-viewed" element={<RecentlyViewed />} />
+              <Route path="/contacted" element={<Contacted />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<NotFound />} />

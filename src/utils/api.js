@@ -1,4 +1,5 @@
 const DEFAULT_API_URL = "http://localhost:5000";
+const DEFAULT_API_URL_ALT = "http://127.0.0.1:5000";
 
 // In dev, prefer Vite proxy (relative /api) to avoid CORS/network issues.
 export const API_URL = import.meta?.env?.DEV
@@ -36,15 +37,27 @@ async function doJson(method, url, body, token) {
 }
 
 export async function apiGet(path) {
-  const primaryUrl = `${API_URL}${path}`;
+  const primaryUrl = `${API_URL}${path}`; // usually "/api/..." in dev
   try {
     return await doGet(primaryUrl);
   } catch (e) {
+    const err1 = e;
     // If proxy/relative request fails for any reason, try direct backend.
-    // This avoids "Failed to fetch" when the environment doesn't honor Vite proxy.
     const fallbackUrl = `${DEFAULT_API_URL}${path}`;
-    if (primaryUrl === fallbackUrl) throw e;
-    return await doGet(fallbackUrl);
+    try {
+      if (primaryUrl !== fallbackUrl) return await doGet(fallbackUrl);
+    } catch (e2) {
+      const fallbackUrlAlt = `${DEFAULT_API_URL_ALT}${path}`;
+      try {
+        if (primaryUrl !== fallbackUrlAlt) return await doGet(fallbackUrlAlt);
+      } catch (e3) {
+        throw new Error(
+          `Failed to reach API. Tried: ${primaryUrl}, ${fallbackUrl}, ${fallbackUrlAlt}. ` +
+            `Errors: ${err1?.message || err1}; ${e2?.message || e2}; ${e3?.message || e3}`
+        );
+      }
+    }
+    throw err1;
   }
 }
 
@@ -53,9 +66,22 @@ export async function apiPost(path, body, token) {
   try {
     return await doJson("POST", primaryUrl, body, token);
   } catch (e) {
+    const err1 = e;
     const fallbackUrl = `${DEFAULT_API_URL}${path}`;
-    if (primaryUrl === fallbackUrl) throw e;
-    return await doJson("POST", fallbackUrl, body, token);
+    try {
+      if (primaryUrl !== fallbackUrl) return await doJson("POST", fallbackUrl, body, token);
+    } catch (e2) {
+      const fallbackUrlAlt = `${DEFAULT_API_URL_ALT}${path}`;
+      try {
+        if (primaryUrl !== fallbackUrlAlt) return await doJson("POST", fallbackUrlAlt, body, token);
+      } catch (e3) {
+        throw new Error(
+          `Failed to reach API. Tried: ${primaryUrl}, ${fallbackUrl}, ${fallbackUrlAlt}. ` +
+            `Errors: ${err1?.message || err1}; ${e2?.message || e2}; ${e3?.message || e3}`
+        );
+      }
+    }
+    throw err1;
   }
 }
 

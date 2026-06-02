@@ -1,7 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useLocation, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import PropertyCard from "../components/property/PropertyCard";
+import { saveRecentlySearched } from "../utils/activity";
 
 function SearchResults() {
   const location = useLocation();
@@ -9,6 +10,10 @@ function SearchResults() {
 
   const queryParams = new URLSearchParams(location.search);
   const searchQuery = queryParams.get("search") || "";
+
+  useEffect(() => {
+    saveRecentlySearched(searchQuery);
+  }, [searchQuery]);
 
   const filteredProperties = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();

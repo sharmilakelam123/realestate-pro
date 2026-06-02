@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { apiPost } from '../utils/api';
+import { saveRecentlyViewed, saveContactedLead } from '../utils/activity';
 export default function PropertyDetails() {
   const { id } = useParams();
   const properties = useSelector(state => state.properties.items);
@@ -20,6 +21,10 @@ export default function PropertyDetails() {
       </div>
     );
   }
+
+  useEffect(() => {
+    saveRecentlyViewed(property._id || property.id);
+  }, [property._id, property.id]);
   return (
     <div style={{ maxWidth: '1200px', margin: '40px auto', padding: '0 20px' }}>
       <Link to="/" style={{ color: '#0054a6', textDecoration: 'none', fontWeight: '600' }}>← Back to Listings</Link>
@@ -84,14 +89,15 @@ export default function PropertyDetails() {
                 e.preventDefault();
                 try {
                   setSubmitting(true);
-                  await apiPost('/api/leads', {
+                  const lead = await apiPost('/api/leads', {
                     propertyId: property._id || property.id,
                     name,
                     phone,
                     message,
                     preferredVisitAt: preferredVisitAt || null,
                   });
-                  alert("Enquiry registered! Track it in Dashboard → Enquiries.");
+                  saveContactedLead(lead);
+                  alert("Enquiry registered! Check Dashboard → Enquiries / My Activity → Contacted.");
                   setName('');
                   setPhone('');
                   setPreferredVisitAt('');

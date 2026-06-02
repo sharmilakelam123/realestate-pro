@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { saveRecentlySearched } from "../../utils/activity";
 
 function SearchBar() {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
   const handleSearch = () => {
+    saveRecentlySearched(search);
     navigate(`/search-results?search=${search}`);
   };
 

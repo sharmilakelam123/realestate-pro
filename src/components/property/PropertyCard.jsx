@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleFavorite } from '../../redux/store';
+import { motion } from 'framer-motion';
 export default function PropertyCard({ property }) {
   const dispatch = useDispatch();
   const favorites = useSelector(state => state.properties.favorites);
@@ -25,8 +26,14 @@ export default function PropertyCard({ property }) {
   })();
   const bhk = property?.bedrooms ?? property?.bhk;
   const areaText = property?.area ?? (property?.area ? `${property.area}` : '');
+  const advertiser = property?.advertiserType
+    ? String(property.advertiserType).charAt(0).toUpperCase() + String(property.advertiserType).slice(1)
+    : '';
   return (
-    <div style={{
+    <motion.div
+      whileHover={{ y: -4, boxShadow: '0 10px 24px rgba(0,0,0,0.10)' }}
+      transition={{ duration: 0.2 }}
+      style={{
       backgroundColor: '#ffffff',
       border: '1px solid #e2e8f0',
       borderRadius: '10px',
@@ -35,7 +42,8 @@ export default function PropertyCard({ property }) {
       display: 'flex',
       flexDirection: 'column',
       position: 'relative'
-    }}>
+    }}
+    >
       {/* Cover Image Wrapper */}
       <div style={{ position: 'relative', height: '180px' }}>
         <img
@@ -99,6 +107,18 @@ export default function PropertyCard({ property }) {
         <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 14px 0' }}>
           📍 {property.location}
         </p>
+        {advertiser ? (
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '10px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 900, color: '#0f172a', background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '3px 8px', borderRadius: '999px' }}>
+              Posted by {advertiser}
+            </span>
+            {property.featured ? (
+              <span style={{ fontSize: '11px', fontWeight: 900, color: '#fff', background: '#0f172a', padding: '3px 8px', borderRadius: '999px' }}>
+                Featured
+              </span>
+            ) : null}
+          </div>
+        ) : null}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -139,6 +159,6 @@ export default function PropertyCard({ property }) {
           </div>
         ) : null}
       </div>
-    </div>
+    </motion.div>
   );
 }
