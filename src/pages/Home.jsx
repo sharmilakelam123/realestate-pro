@@ -1,85 +1,65 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setProperties } from '../redux/store';
 import SearchBar from '../components/home/SearchBar';
 import PropertyCard from '../components/property/PropertyCard';
-// 8 High-Fidelity Mock Properties
-const mockProperties = [
-  {
-    id: 1,
-    title: "3 BHK Premium Gated Apartment",
-    location: "Gachibowli, Hyderabad",
-    price: 13500000,
-    bhk: 3,
-    area: 1950,
-    type: "Apartment",
-    verified: true,
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 2,
-    title: "2 BHK Elegant High-Rise Flat",
-    location: "Whitefield, Bangalore",
-    price: 7800000,
-    bhk: 2,
-    area: 1250,
-    type: "Apartment",
-    verified: true,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 3,
-    title: "4 BHK Ultra Luxury Independent Villa",
-    location: "Dwarka, Delhi",
-    price: 42000000,
-    bhk: 4,
-    area: 3600,
-    type: "Villa",
-    verified: true,
-    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 4,
-    title: "3 BHK Standalone House near Metro",
-    location: "Andheri East, Mumbai",
-    price: 24500000,
-    bhk: 3,
-    area: 1800,
-    type: "Independent House",
-    verified: false,
-    image: "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=600&q=80"
-  },
-  {
-    id: 5,
-    title: "Premium Plots in Residential Layout",
-    location: "Kompally, Hyderabad",
-    price: 5200000,
-    bhk: 1,
-    area: 2200,
-    type: "Plot",
-    verified: true,
-    image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80"
-  }
-];
+import { apiGet } from '../utils/api';
+
+const CATEGORY_LABELS = {
+  apartment: 'Apartment',
+  villa: 'Villa',
+  'independent-house': 'Independent House',
+  plot: 'Plot',
+  office: 'Office',
+  shop: 'Shop',
+};
+
 export default function Home() {
   const dispatch = useDispatch();
   const properties = useSelector(state => state.properties.items);
   const filters = useSelector(state => state.properties.filters);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
   useEffect(() => {
-    // Populate store database if empty
-    if (properties.length === 0) {
-      dispatch(setProperties(mockProperties));
+    let cancelled = false;
+    async function load() {
+      try {
+        setLoading(true);
+        setError('');
+        const data = await apiGet('/api/properties?limit=24&sort=featured');
+        if (cancelled) return;
+        const items = Array.isArray(data) ? data : data?.items;
+        dispatch(setProperties(Array.isArray(items) ? items : []));
+      } catch (e) {
+        if (cancelled) return;
+        setError((e?.message || 'Failed to load properties') + ' (is backend running on :5000?)');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     }
-  }, [dispatch, properties]);
+    if (properties.length === 0) load();
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch, properties.length]);
+
   // Client side filtration matching search query and tabs selection
-  const filteredList = properties.filter(item => {
-    if (filters.type !== 'all' && item.type !== filters.type) return false;
-    if (filters.search) {
-      const searchLower = filters.search.toLowerCase();
-      return item.title.toLowerCase().includes(searchLower) || item.location.toLowerCase().includes(searchLower);
-    }
-    return true;
-  });
+  const filteredList = useMemo(() => {
+    return properties.filter(item => {
+      const type = item?.category ? CATEGORY_LABELS[item.category] || item.category : item?.type;
+      if (filters.type !== 'all' && type !== filters.type) return false;
+      if (filters.search) {
+        const searchLower = filters.search.toLowerCase();
+        return (
+          String(item?.title || '').toLowerCase().includes(searchLower) ||
+          String(item?.location || '').toLowerCase().includes(searchLower)
+        );
+      }
+      return true;
+    });
+  }, [properties, filters.type, filters.search]);
+
   return (
     <div>
       {/* Search Header Banner */}
@@ -108,13 +88,23 @@ export default function Home() {
             Found {filteredList.length} matches
           </span>
         </div>
+        {loading && (
+          <div style={{ padding: '12px 0', color: '#475569', fontWeight: '600' }}>
+            Loading properties…
+          </div>
+        )}
+        {error && (
+          <div style={{ padding: '12px 0', color: '#b91c1c', fontWeight: '600' }}>
+            {error}
+          </div>
+        )}
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
           gap: '24px'
         }}>
           {filteredList.map(item => (
-            <PropertyCard key={item.id} property={item} />
+            <PropertyCard key={item._id || item.id} property={item} />
           ))}
         </div>
       </section>

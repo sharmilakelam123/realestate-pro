@@ -49,7 +49,7 @@ const propertySlice = createSlice({
       state.items = action.payload;
     },
     toggleFavorite: (state, action) => {
-      const id = action.payload;
+      const id = String(action.payload);
       if (state.favorites.includes(id)) {
         state.favorites = state.favorites.filter(favId => favId !== id);
       } else {

@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { apiPost } from '../utils/api';
 export default function PropertyDetails() {
   const { id } = useParams();
   const properties = useSelector(state => state.properties.items);
-  const property = properties.find(p => p.id === parseInt(id));
+  const property = properties.find(p => String(p?._id || p?.id) === String(id));
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [message, setMessage] = useState('I am interested. Please call me back.');
+  const [preferredVisitAt, setPreferredVisitAt] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   if (!property) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px' }}>
@@ -39,15 +45,17 @@ export default function PropertyDetails() {
           }}>
             <div>
               <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '600' }}>Price</span>
-              <h3 style={{ margin: '4px 0 0 0', color: '#0054a6' }}>₹{(property.price / 10000000).toFixed(2)} Cr</h3>
+              <h3 style={{ margin: '4px 0 0 0', color: '#0054a6' }}>
+                ₹{(Number(property.price || 0) / 10000000).toFixed(2)} Cr
+              </h3>
             </div>
             <div>
               <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '600' }}>BHK</span>
-              <h3 style={{ margin: '4px 0 0 0' }}>{property.bhk} BHK</h3>
+              <h3 style={{ margin: '4px 0 0 0' }}>{property.bedrooms ?? property.bhk ?? '-'} BHK</h3>
             </div>
             <div>
               <span style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: '600' }}>Area</span>
-              <h3 style={{ margin: '4px 0 0 0' }}>{property.area} Sq.Ft</h3>
+              <h3 style={{ margin: '4px 0 0 0' }}>{property.area ?? '-'}</h3>
             </div>
           </div>
           <div>
@@ -71,10 +79,59 @@ export default function PropertyDetails() {
             <h3 style={{ margin: '0 0 6px 0' }}>Contact Builder / Owner</h3>
             <p style={{ fontSize: '12px', color: '#64748b', margin: '0 0 20px 0' }}>Instant site visits, RERA registrations.</p>
             
-            <form onSubmit={e => { e.preventDefault(); alert("Enquiry registered! Agent callback in 10 minutes."); }}>
-              <input type="text" placeholder="Name" required style={{ width: '100%', padding: '10px', marginBottom: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-              <input type="tel" placeholder="Mobile Phone" required pattern="[0-9]{10}" style={{ width: '100%', padding: '10px', marginBottom: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
-              <textarea placeholder="I am interested. Call me back." rows="3" style={{ width: '100%', padding: '10px', marginBottom: '16px', borderRadius: '6px', border: '1px solid #cbd5e1' }}></textarea>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                try {
+                  setSubmitting(true);
+                  await apiPost('/api/leads', {
+                    propertyId: property._id || property.id,
+                    name,
+                    phone,
+                    message,
+                    preferredVisitAt: preferredVisitAt || null,
+                  });
+                  alert("Enquiry registered! Track it in Dashboard → Enquiries.");
+                  setName('');
+                  setPhone('');
+                  setPreferredVisitAt('');
+                } catch (err) {
+                  alert(err?.message || "Failed to submit enquiry");
+                } finally {
+                  setSubmitting(false);
+                }
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Name"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{ width: '100%', padding: '10px', marginBottom: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              />
+              <input
+                type="tel"
+                placeholder="Mobile Phone"
+                required
+                pattern="[0-9]{10}"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                style={{ width: '100%', padding: '10px', marginBottom: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              />
+              <input
+                type="datetime-local"
+                value={preferredVisitAt}
+                onChange={(e) => setPreferredVisitAt(e.target.value)}
+                style={{ width: '100%', padding: '10px', marginBottom: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              />
+              <textarea
+                placeholder="Message"
+                rows="3"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                style={{ width: '100%', padding: '10px', marginBottom: '16px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+              ></textarea>
               <button type="submit" style={{
                 width: '100%',
                 backgroundColor: '#ff8f00',
@@ -85,7 +142,7 @@ export default function PropertyDetails() {
                 fontWeight: '700',
                 fontSize: '14px',
                 cursor: 'pointer'
-              }}>Request Call Back</button>
+              }} disabled={submitting}>{submitting ? 'Submitting…' : 'Request Call Back'}</button>
             </form>
           </div>
         </div>

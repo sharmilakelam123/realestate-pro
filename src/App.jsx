@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotFound from './pages/NotFound';
+import SearchResults from './pages/SearchResults';
 // Layout Components
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
@@ -26,6 +27,7 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/properties" element={<PropertyListing />} />
               <Route path="/property/:id" element={<PropertyDetails />} />
+              <Route path="/search-results" element={<SearchResults />} />
               <Route path="/add-property" element={<AddProperty />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/dashboard" element={<Dashboard />} />

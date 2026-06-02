@@ -5,12 +5,26 @@ import { toggleFavorite } from '../../redux/store';
 export default function PropertyCard({ property }) {
   const dispatch = useDispatch();
   const favorites = useSelector(state => state.properties.favorites);
-  const isShortlisted = favorites.includes(property.id);
+  const propertyId = String(property?._id || property?.id || '');
+  const isShortlisted = favorites.includes(propertyId);
   const formatCurrency = (num) => {
     if (num >= 10000000) return "₹" + (num / 10000000).toFixed(2) + " Cr";
     if (num >= 100000) return "₹" + (num / 100000).toFixed(2) + " L";
     return "₹" + num.toLocaleString();
   };
+  const categoryLabel = (() => {
+    const cat = property?.category;
+    if (!cat) return property?.type || '';
+    if (cat === 'apartment') return 'Apartment';
+    if (cat === 'villa') return 'Villa';
+    if (cat === 'independent-house') return 'Independent House';
+    if (cat === 'plot') return 'Plot';
+    if (cat === 'office') return 'Office';
+    if (cat === 'shop') return 'Shop';
+    return String(cat);
+  })();
+  const bhk = property?.bedrooms ?? property?.bhk;
+  const areaText = property?.area ?? (property?.area ? `${property.area}` : '');
   return (
     <div style={{
       backgroundColor: '#ffffff',
@@ -45,7 +59,7 @@ export default function PropertyCard({ property }) {
         
         {/* Shortlist Heart Button */}
         <button
-          onClick={() => dispatch(toggleFavorite(property.id))}
+          onClick={() => dispatch(toggleFavorite(propertyId))}
           style={{
             position: 'absolute',
             top: '12px',
@@ -70,7 +84,7 @@ export default function PropertyCard({ property }) {
       {/* Property Details Content */}
       <div style={{ padding: '16px', flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <h3 style={{ fontSize: '18px', fontWeight: '700', color: '#0054a6', margin: '0 0 4px 0' }}>
-          {formatCurrency(property.price)}
+          {formatCurrency(Number(property.price || 0))}
         </h3>
         <h4 style={{
           fontSize: '14px',
@@ -94,11 +108,11 @@ export default function PropertyCard({ property }) {
           fontSize: '12px',
           color: '#475569'
         }}>
-          <span><strong>BHK:</strong> {property.bhk}</span>
-          <span><strong>Area:</strong> {property.area} sqft</span>
+          <span><strong>BHK:</strong> {bhk || '-'}</span>
+          <span><strong>Area:</strong> {areaText || '-'}</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: '14px' }}>
-          <Link to={`/property/${property.id}`} style={{
+          <Link to={`/property/${propertyId}`} style={{
             textDecoration: 'none',
             textAlign: 'center',
             backgroundColor: '#f1f5f9',
@@ -119,6 +133,11 @@ export default function PropertyCard({ property }) {
             cursor: 'pointer'
           }}>Contact</button>
         </div>
+        {categoryLabel ? (
+          <div style={{ marginTop: '10px', fontSize: '12px', color: '#64748b' }}>
+            <strong>Type:</strong> {categoryLabel}
+          </div>
+        ) : null}
       </div>
     </div>
   );
