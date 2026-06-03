@@ -16,6 +16,7 @@ import SearchResults from './pages/SearchResults';
 import RecentlySearched from './pages/RecentlySearched';
 import RecentlyViewed from './pages/RecentlyViewed';
 import Contacted from './pages/Contacted';
+import Services from './pages/Services';
 // Layout Components
 import Navbar from './components/common/Navbar';
 import Footer from './components/common/Footer';
@@ -37,6 +38,7 @@ export default function App() {
               <Route path="/recently-searched" element={<RecentlySearched />} />
               <Route path="/recently-viewed" element={<RecentlyViewed />} />
               <Route path="/contacted" element={<Contacted />} />
+              <Route path="/services" element={<Services />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<NotFound />} />

@@ -21,33 +21,33 @@ export default function Navbar() {
     buyers: {
       title: 'For Buyers',
       items: [
-        { label: 'Property Rates', to: '/properties' },
-        { label: 'Home Loan Tools & More', to: '/properties' },
-        { label: 'Articles & News', to: '/properties' },
-        { label: 'Policies (GST, RERA)', to: '/properties' },
+        { label: 'Property Rates', to: '/services?tab=buyers&tool=rates' },
+        { label: 'Home Loan Tools & More', to: '/services?tab=buyers&tool=emi' },
+        { label: 'Articles & News', to: '/services?tab=buyers&tool=rates' },
+        { label: 'Policies (GST, RERA)', to: '/services?tab=buyers&tool=policy' },
       ],
     },
     tenants: {
       title: 'For Tenants',
       items: [
-        { label: 'Renting Guide', to: '/properties' },
-        { label: 'Rent Receipt', to: '/properties' },
-        { label: 'Tenant Articles', to: '/properties' },
+        { label: 'Renting Guide', to: '/services?tab=tenants&tool=guide' },
+        { label: 'Rent Receipt', to: '/services?tab=tenants&tool=rent' },
+        { label: 'Tenant Articles', to: '/services?tab=tenants&tool=guide' },
       ],
     },
     owners: {
       title: 'For Owners',
       items: [
         { label: 'Post Property (Free)', to: '/add-property' },
-        { label: 'Owner Services', to: '/dashboard' },
-        { label: 'Seller Guide', to: '/properties' },
+        { label: 'Owner Services', to: '/services?tab=owners&tool=valuation' },
+        { label: 'Seller Guide', to: '/services?tab=owners&tool=guide' },
       ],
     },
     dealers: {
       title: 'For Dealers / Builders',
       items: [
-        { label: 'Dealer Services', to: '/dashboard' },
-        { label: 'Builder Services', to: '/dashboard' },
+        { label: 'Dealer Services', to: '/services?tab=dealers&tool=analytics' },
+        { label: 'Builder Services', to: '/services?tab=dealers&tool=analytics' },
         { label: 'Post Inventory', to: '/add-property' },
       ],
     },
