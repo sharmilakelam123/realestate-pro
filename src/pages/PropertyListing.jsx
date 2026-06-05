@@ -282,27 +282,45 @@ export default function PropertyListing() {
 
   useEffect(() => {
     let cancelled = false;
+
     async function load() {
       try {
         setLoading(true);
         setError("");
+
         const data = await apiGet(`/api/properties?${queryString}`);
         if (cancelled) return;
-        setItems(Array.isArray(data?.items) ? data.items : []);
-        setTotal(Number(data?.total || 0));
-        setPages(Number(data?.pages || 1));
-        dispatch(setProperties(Array.isArray(data?.items) ? data.items : []));
+
+        // Backend returns { items, total, pages }. Some offline/middleware modes can return arrays.
+        // Always normalize into a safe array before using .map() or writing to Redux.
+        const safeItems = Array.isArray(data?.data || data)
+          ? (data?.data || data)
+          : Array.isArray(data?.items)
+            ? data.items
+            : [];
+
+        setItems(safeItems);
+        setTotal(Number(data?.total ?? safeItems.length ?? 0));
+        setPages(Number(data?.pages ?? 1));
+        dispatch(setProperties(safeItems));
       } catch (e) {
-        if (!cancelled) setError(e?.message || "Failed to load properties");
+        if (!cancelled) {
+          setItems([]);
+          dispatch(setProperties([]));
+          setError(e?.message || "Failed to load properties");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
     }
+
     load();
     return () => {
       cancelled = true;
     };
   }, [dispatch, queryString]);
+
+
 
   useEffect(() => {
     let cancelled = false;
@@ -509,7 +527,7 @@ export default function PropertyListing() {
                 Most searched localities for {demandTab === "apartment" ? "Flat/Apartment" : demandTab === "plot" ? "Plots" : "Builder Floor"}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
-                {VIZAG_DEMAND[demandTab].map((loc, idx) => (
+                {(CITY_DEMAND[city]?.[demandTab] || CITY_DEMAND["Visakhapatnam"]?.[demandTab] || []).map((loc, idx) => (
                   <div
                     key={loc.name}
                     onClick={() => { setQ(loc.name); setCategory(demandTab); }}
@@ -573,7 +591,7 @@ export default function PropertyListing() {
               paddingBottom: "12px",
               scrollbarWidth: "thin"
             }}>
-              {VIZAG_BUILDERS.map(b => (
+              {(window?.VIZAG_BUILDERS ?? []).map(b => (
                 <div
                   key={b.name}
                   style={{
@@ -633,7 +651,7 @@ export default function PropertyListing() {
                   </tr>
                 </thead>
                 <tbody>
-                  {VIZAG_GAINERS.map((g) => (
+                  {CITY_GAINERS["Visakhapatnam"].map((g) => (
                     <tr
                       key={g.name}
                       style={{
