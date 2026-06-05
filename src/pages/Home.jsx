@@ -6,15 +6,6 @@ import PropertyCard from "../components/property/PropertyCard";
 import { apiGet } from "../utils/api";
 import { motion } from "framer-motion";
 
-const CATEGORY_LABELS = {
-  apartment: "Apartment",
-  villa: "Villa",
-  "independent-house": "Independent House",
-  plot: "Plot",
-  office: "Office",
-  shop: "Shop",
-};
-
 export default function Home() {
   const dispatch = useDispatch();
   const properties = useSelector((state) => state.properties.items);
@@ -32,7 +23,7 @@ export default function Home() {
         setLoading(true);
         setError("");
 
-        // ✅ IMPORTANT: backend route must be /properties
+        // ✅ FIXED API (NO /api)
         const data = await apiGet("/properties?limit=50&sort=featured");
 
         const items = Array.isArray(data?.items)
@@ -60,13 +51,11 @@ export default function Home() {
     };
   }, [dispatch]);
 
-  /* ================= FILTER LOGIC ================= */
+  /* ================= FILTER ================= */
   const filteredList = useMemo(() => {
     return (properties || []).filter((item) => {
-      const type = item?.category || item?.type;
-
-      if (filters?.type && filters.type !== "all" && type !== filters.type) {
-        return false;
+      if (filters?.type && filters.type !== "all") {
+        if ((item?.category || item?.type) !== filters.type) return false;
       }
 
       if (filters?.search) {
@@ -85,6 +74,7 @@ export default function Home() {
 
   return (
     <div>
+
       {/* HEADER */}
       <motion.section
         initial={{ opacity: 0, y: 10 }}
@@ -106,12 +96,16 @@ export default function Home() {
 
       {/* CONTENT */}
       <section style={{ maxWidth: 1200, margin: "40px auto", padding: 20 }}>
+
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <h2>Recommended for You</h2>
           <span>Found {filteredList.length} matches</span>
         </div>
 
+        {/* LOADING */}
         {loading && <p>Loading properties...</p>}
+
+        {/* ERROR */}
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         {/* GRID */}
@@ -131,6 +125,7 @@ export default function Home() {
             />
           ))}
         </motion.div>
+
       </section>
     </div>
   );

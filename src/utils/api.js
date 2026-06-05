@@ -1,50 +1,32 @@
-const BASE_URL = "http://localhost:5000/api";
+const BASE_URL = "http://127.0.0.1:5000";
 
-/* ================= GET API ================= */
 export async function apiGet(path) {
-  try {
-    const res = await fetch(BASE_URL + path, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+  const url = BASE_URL + path;
 
-    // if backend error
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || "Failed to fetch");
-    }
+  const res = await fetch(url);
 
-    const data = await res.json();
-
-    // backend returns {items: []} OR array
-    return data?.items ? data.items : data;
-  } catch (error) {
-    console.error("GET API ERROR:", error.message);
-    throw error;
+  // If backend error page comes, show real error
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
   }
+
+  return await res.json();
 }
 
-/* ================= POST API ================= */
-export async function apiPost(path, payload = {}) {
-  try {
-    const res = await fetch(BASE_URL + path, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+export async function apiPost(path, data = {}) {
+  const res = await fetch(BASE_URL + path, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || "Request failed");
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error("POST API ERROR:", error.message);
-    throw error;
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(text);
   }
+
+  return res.json();
 }
